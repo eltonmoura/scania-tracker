@@ -1,0 +1,25 @@
+version: "3"
+services:
+    db:
+        image: mysql:5.7
+        volumes:
+            - db_data:/var/lib/mysql
+        restart: always
+        environment:
+            MYSQL_ROOT_PASSWORD: senha123
+            MYSQL_DATABASE: tracker_db
+            MYSQL_USER: app
+            MYSQL_PASSWORD: senha123
+        ports:
+            - "3506:3306"
+    web:
+        build: ./docker/web/
+        ports:
+            - "8080:80"
+        volumes:
+            - .:/var/www/html
+        links:
+            - db
+        restart: always
+volumes:
+    db_data: {}
