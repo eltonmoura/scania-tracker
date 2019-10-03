@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 use \Exception;
 use Illuminate\Console\Command;
 use GuzzleHttp\Client as HttpClient;
+use \ZipArchive;
 
 /**
  * Class SyncOnixsatCommand
@@ -27,6 +28,7 @@ class SyncOnixsatCommand extends Command
      */
     protected $description = "Sync Onixsat Webservice";
 
+    private $uri = 'http://webservice.onixsat.com.br';
     private $login = '01161180000156';
     private $password = '594444';
 
@@ -38,7 +40,13 @@ class SyncOnixsatCommand extends Command
     public function handle()
     {
         try {
-            $rep = $this->requestMensagemCB();
+            $this->requestMensagemCB();
+            // $this->tempFile = dirname(__DIR__) . '/../../storage/datafiles/RequestMensagemCB-20191003184444.zip';
+
+            $content = $this->getContentFromZipFile($this->tempFile);
+
+            print_r($content);
+
             print("ok\n");
         } catch (Exception $e) {
             $this->error("An error occurred: " . $e->getMessage());
@@ -47,10 +55,12 @@ class SyncOnixsatCommand extends Command
 
     private function requestMensagemCB()
     {
-        $url = "http://webservice.onixsat.com.br";
-
         $xml = sprintf(
-            "<RequestMensagemCB><login>%s</login><senha>%s</senha><mId>1</mId></RequestMensagemCB>",
+            "<RequestMensagemCB>
+                <login>%s</login>
+                <senha>%s</senha>
+                <mId>1</mId>
+            </RequestMensagemCB>",
             $this->login,
             $this->password
         );
@@ -71,15 +81,26 @@ class SyncOnixsatCommand extends Command
         $this->tempFile = $dir . "/RequestMensagemCB-" . date('YmdHis') . ".zip";
 
         $client = new HttpClient();
-        $res = $client->request('POST', $url, $options);
+        $res = $client->request('POST', $this->uri, $options);
 
         file_put_contents($this->tempFile, $res->getBody());
 
         return true;
     }
 
-    private function processZipFile()
+    private function getContentFromZipFile($fileName)
     {
-        //
+        $zip = new ZipArchive();
+        $zip->open($this->tempFile);
+
+        $result = [];
+        for ($i=0; $i<$zip->numFiles; $i++) {
+            $xml = $zip->getFromIndex($i);
+            $json = json_encode(simplexml_load_string($xml));
+            $array = json_decode($json, true);
+
+            $result = array_merge($result, $array['MensagemCB']);
+        }
+        return $result;
     }
 }

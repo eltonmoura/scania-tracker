@@ -1,7 +1,7 @@
 FROM php:7.2-apache
 MAINTAINER elton.ms@gmail.com
 
-RUN apt-get update && apt-get install -y vim unzip cron
+RUN apt-get update && apt-get install -y vim unzip cron libzip-dev zip
 
 # Configurando Timezone do Serv
 ENV TZ=America/Sao_Paulo
@@ -14,7 +14,8 @@ COPY ./php.ini /usr/local/etc/php/conf.d/php.ini
 COPY ./apache.conf /etc/apache2/sites-enabled/000-default.conf
 
 # PHP extensions
-RUN docker-php-ext-install pdo pdo_mysql
+RUN docker-php-ext-configure zip --with-libzip
+RUN docker-php-ext-install pdo pdo_mysql zip
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- \
