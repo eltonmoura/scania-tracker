@@ -38,14 +38,14 @@ class SyncOnixsatCommand extends Command
     public function handle()
     {
         try {
-            $rep = $this->doRequest();
+            $rep = $this->requestMensagemCB();
             print("ok\n");
         } catch (Exception $e) {
             $this->error("An error occurred: " . $e->getMessage());
         }
     }
 
-    private function doRequest()
+    private function requestMensagemCB()
     {
         $url = "http://webservice.onixsat.com.br";
 
@@ -62,12 +62,13 @@ class SyncOnixsatCommand extends Command
             'body' => $xml,
         ];
 
-        $this->tempFile = sprintf(
-            '%s/../../storage/datafiles/RequestMensagemCB-%s.%s',
-            dirname(__DIR__),
-            date('YmdHis'),
-            'zip'
-        );
+        $dir = dirname(__DIR__) . '/../../storage/datafiles';
+
+        if (!is_dir($dir)) {
+            mkdir($dir);
+        }
+
+        $this->tempFile = $dir . "/RequestMensagemCB-" . date('YmdHis') . ".zip";
 
         $client = new HttpClient();
         $res = $client->request('POST', $url, $options);
