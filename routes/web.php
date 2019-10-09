@@ -17,3 +17,4 @@ $router->get('/', function () use ($router) {
 
 $router->get('/veiculo[/{numberPlate}]', 'HomeController@getVehicle');
 $router->get('/veiculo/{numberPlate}/position', 'HomeController@getPosition');
+$router->get('/last-position', 'HomeController@getLasPosition');

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MensagemCb;
 use App\Models\Veiculo;
+use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
@@ -16,6 +17,25 @@ class HomeController extends Controller
                 ->get();
 
             return response()->json($mensagens);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], self::CODE_INTERNAL_ERROR);
+        }
+    }
+
+    public function getLasPosition()
+    {
+        try {
+            $response = DB::connection('mysql2')->table('view_ultima_posicao')
+                ->select(
+                    'cvei_placa',
+                    'lupo_latitude',
+                    'lupo_longitude',
+                    'lupo_data_status',
+                    'cmar_nome'
+                )
+                ->get();
+
+            return response()->json($response);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], self::CODE_INTERNAL_ERROR);
         }
