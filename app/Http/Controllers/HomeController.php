@@ -8,51 +8,68 @@ use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
-    public function getPosition($numberPlate)
+    public function getLastPosition($numberPlate)
     {
         try {
-            $veiculo = Veiculo::where('placa', $numberPlate)->first();
-            $mensagens = MensagemCb::where('veiid', $veiculo->veiid)
-                ->orderBy('dt', 'desc')
-                ->get();
+            $lastPositionWS = $this->getLastPositionWS($numberPlate);
 
-            return response()->json($mensagens);
+            $lastPositionBD = $this->getLastPositionBD($numberPlate);
+
+            return response()->json(array_merge($lastPositionWS, $lastPositionBD));
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], self::CODE_INTERNAL_ERROR);
         }
     }
 
-    public function getLasPosition()
+    private function getLastPositionWS($numberPlate)
     {
-        try {
-            $response = DB::connection('mysql2')->table('view_ultima_posicao')
-                ->select(
-                    'cvei_placa',
-                    'lupo_latitude',
-                    'lupo_longitude',
-                    'lupo_data_status',
-                    'cmar_nome'
-                )
-                ->get();
-
-            return response()->json($response);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], self::CODE_INTERNAL_ERROR);
+        $veiculo = Veiculo::where('placa', $numberPlate)->first();
+        if (empty($veiculo)) {
+            return [];
         }
+
+        $mensagens = MensagemCb::where('veiid', $veiculo->veiid)
+            ->orderBy('dt', 'desc')
+            ->first();
+
+        if (empty($mensagens)) {
+            return [];
+        }
+
+        return [
+            'placa' => $numberPlate,
+            'modelo' => $veiculo->ident,
+            'latitude' => floatval($mensagens->lat),
+            'longitude' => floatval($mensagens->lon),
+            'data_hora' => $mensagens->dt,
+        ];
     }
 
-    public function getVehicle($numberPlate = null)
+    private function getLastPositionBD($numberPlate)
     {
-        try {
-            if ($numberPlate) {
-                $veiculo = Veiculo::where('placa', $numberPlate)->first();
-            } else {
-                $veiculo = Veiculo::all();
-            }
+        $ultimaPosicao = DB::connection('mysql2')
+            ->table('view_ultima_posicao')
+            ->whereRaw("REPLACE(cvei_placa, '-', '') = ?", [$numberPlate])
+            ->select(
+                'cvei_placa',
+                'lupo_latitude',
+                'lupo_longitude',
+                'lupo_data_status',
+                'cmar_nome'
+            )
+            ->orderBy('lupo_data_status', 'desc')
+            ->first();
 
-            return response()->json($veiculo);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], self::CODE_INTERNAL_ERROR);
+        if (empty($ultimaPosicao)) {
+            return [];
         }
+
+        return [
+            'placa' => $numberPlate,
+            'modelo' => $ultimaPosicao->cmar_nome,
+            'latitude' => floatval($ultimaPosicao->lupo_latitude),
+            'longitude' => floatval($ultimaPosicao->lupo_longitude),
+            'data_hora' => $ultimaPosicao->lupo_data_status,
+        ];
     }
 }
