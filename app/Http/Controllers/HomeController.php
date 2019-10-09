@@ -7,16 +7,6 @@ use App\Models\Veiculo;
 
 class HomeController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        //
-    }
-
     public function getPosition($numberPlate)
     {
         try {
@@ -31,10 +21,14 @@ class HomeController extends Controller
         }
     }
 
-    public function getVehicle($numberPlate)
+    public function getVehicle($numberPlate = null)
     {
         try {
-            $veiculo = Veiculo::where('placa', $numberPlate)->first();
+            if ($numberPlate) {
+                $veiculo = Veiculo::where('placa', $numberPlate)->first();
+            } else {
+                $veiculo = Veiculo::all();
+            }
 
             return response()->json($veiculo);
         } catch (\Exception $e) {

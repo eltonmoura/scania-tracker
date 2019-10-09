@@ -15,5 +15,5 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
-$router->get('/veiculo/{numberPlate}', 'HomeController@getVehicle');
+$router->get('/veiculo[/{numberPlate}]', 'HomeController@getVehicle');
 $router->get('/veiculo/{numberPlate}/position', 'HomeController@getPosition');
