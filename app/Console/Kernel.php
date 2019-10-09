@@ -13,7 +13,8 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        Commands\SyncOnixsatCommand::class,
+        Commands\OnixsatImportMensagensCommand::class,
+        Commands\OnixsatImportVeiculosCommand::class,
     ];
 
     /**
