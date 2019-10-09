@@ -6,7 +6,6 @@ use Illuminate\Console\Command;
 use \Exception;
 use \ZipArchive;
 use Carbon\Carbon;
-use App\Models\MensagemCb;
 use App\Models\Veiculo;
 
 /**

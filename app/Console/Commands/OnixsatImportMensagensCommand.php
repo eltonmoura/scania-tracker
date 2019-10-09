@@ -6,7 +6,6 @@ use \Exception;
 use \ZipArchive;
 use Carbon\Carbon;
 use App\Models\MensagemCb;
-use App\Models\Veiculo;
 
 /**
  * Class SyncOnixsatCommand
