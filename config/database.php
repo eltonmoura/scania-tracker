@@ -2,6 +2,7 @@
 
 return [
     'default' => 'mysql',
+    'migrations' => 'migrations',
     'connections' => [
         'mysql' => [
             'driver'    => env('DB_CONNECTION'),

@@ -96,6 +96,8 @@ class OnixsatImportMensagensCommand extends Command
     private function requestMensagemCB()
     {
         $maxId = \DB::table('mensagem_cb')->max('mid');
+
+        $maxId = (is_int($maxId)) ? $maxId : 1;
         print("max(mId): $maxId \n");
 
         $onixsat = new OnixsatClient();
