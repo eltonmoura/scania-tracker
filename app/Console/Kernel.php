@@ -25,6 +25,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        //
+        $schedule->command('onixsat:import-mensagens')->everyMinute();
+        $schedule->command('onixsat:import-veiculos')->everyTenMinutes();
     }
 }

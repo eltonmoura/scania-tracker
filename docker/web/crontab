@@ -1,0 +1,2 @@
+# Executa a todo minuto
+* * * * * php /var/www/html/teste-cron.php
