@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
-use Carbon\Carbon;
 
 class UserController extends Controller
 {
@@ -32,4 +31,23 @@ class UserController extends Controller
     protected $searchFields = [
         'email',
     ];
+
+    public function create(Request $request)
+    {
+        return parent::create($this->encryptPassord($request));
+    }
+
+    public function update(Request $request, $id)
+    {
+        return parent::update($this->encryptPassord($request), $id);
+    }
+
+    private function encryptPassord(Request $request)
+    {
+        $password = $request->input('password');
+        if (!empty($password)) {
+            $request->merge(['password' => Hash::make($password)]);
+        }
+        return $request;
+    }
 }
