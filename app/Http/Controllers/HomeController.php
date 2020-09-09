@@ -5,9 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\MensagemCb;
 use App\Models\Veiculo;
 use Illuminate\Support\Facades\DB;
+use App\Services\Contracts\AutotracServiceInterface;
 
 class HomeController extends Controller
 {
+    public function __construct(AutotracServiceInterface $autotracService)
+    {
+        $this->autotracService = $autotracService;
+    }
+
     public function getLastPosition($numberPlate)
     {
         try {
@@ -71,5 +77,11 @@ class HomeController extends Controller
             'longitude' => floatval($ultimaPosicao->lupo_longitude),
             'data_hora' => $ultimaPosicao->lupo_data_status,
         ];
+    }
+
+    public function getAutotracAccounts()
+    {
+        $response = $this->autotracService->getAccounts();
+        return response()->json($response);
     }
 }
