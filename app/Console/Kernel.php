@@ -16,6 +16,8 @@ class Kernel extends ConsoleKernel
         Commands\OnixsatImportMensagensCommand::class,
         Commands\OnixsatImportVeiculosCommand::class,
         Commands\PurgeDataBaseCommand::class,
+        Commands\SascarVeiculosImportCommand::class,
+        Commands\SascarPacotePosicaoImportCommand::class,
     ];
 
     /**
@@ -26,8 +28,12 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('onixsat:import-mensagens')->everyMinute();
         $schedule->command('onixsat:import-veiculos')->everyTenMinutes();
+        $schedule->command('onixsat:import-mensagens')->everyMinute();
+
+        $schedule->command('sascar:import-veiculos')->everyTenMinutes();
+        $schedule->command('sascar:import-pacote-posicao')->everyMinute();
+
         // Executa todos os dias as 03hs da madrugada
         $schedule->command('purge:database')->dailyAt('03:00');
     }

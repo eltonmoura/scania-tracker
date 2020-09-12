@@ -20,8 +20,6 @@ class CreateUsers extends Migration
             $table->string('password', 100); // sufuciente para armazenar o hash
             $table->timestamps();
         });
-
-        Artisan::call('db:seed', array('--class' => 'UsersSeeder'));
     }
 
     /**

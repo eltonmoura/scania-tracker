@@ -40,5 +40,8 @@ $router->group(['middleware' => 'auth:api'], function () use ($router) {
         $router->get('/', 'UserController@list');
     });
 
-    $router->get('/last-position/{numberPlate}', 'HomeController@getLastPosition');
+    $router->get('last-position/{numberPlate}', 'HomeController@getLastPosition');
+
+    $router->get('autotrac/accounts', 'HomeController@getAutotracAccounts');
+
 });
