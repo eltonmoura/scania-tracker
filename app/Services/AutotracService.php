@@ -3,9 +3,9 @@
 namespace App\Services;
 
 use GuzzleHttp\Client as HttpClient;
-use App\Services\Contracts\AutotracServiceInterface;
+use App\Services\Contracts\TracServiceInterface;
 
-class AutotracService implements AutotracServiceInterface
+class AutotracService implements TracServiceInterface
 {
     protected $httpClient;
     protected $header;
@@ -14,6 +14,11 @@ class AutotracService implements AutotracServiceInterface
     {
         $this->httpClient = new HttpClient(['base_uri' => env('AUTOTRAC_URL')]);
         $this->setHeader();
+    }
+
+    public function getLastPosition($numberPlat)
+    {
+        return [];
     }
 
     public function getAccounts()

@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use GuzzleHttp\Client as HttpClient;
+use App\Services\AutotracService;
+use App\Services\SascarService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,9 +22,12 @@ class AppServiceProvider extends ServiceProvider
             return new HttpClient();
         });
 
-        $this->app->bind(
-            App\Services\Contracts\AutotracServiceInterface::class,
-            App\Services\AutotracService::class
-        );
+        $this->app->bind(AutotracService::class, function ($app) {
+            return new AutotracService();
+        });
+
+        $this->app->bind(SascarService::class, function ($app) {
+            return new SascarService();
+        });
     }
 }

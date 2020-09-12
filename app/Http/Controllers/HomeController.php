@@ -5,23 +5,21 @@ namespace App\Http\Controllers;
 use App\Models\MensagemCb;
 use App\Models\Veiculo;
 use Illuminate\Support\Facades\DB;
-use App\Services\Contracts\AutotracServiceInterface;
+use App\Services\SascarService;
 
 class HomeController extends Controller
 {
-    public function __construct(AutotracServiceInterface $autotracService)
-    {
-        $this->autotracService = $autotracService;
+    public function __construct(SascarService $sascarService) {
+        $this->sascarService = $sascarService;
     }
 
     public function getLastPosition($numberPlate)
     {
         try {
+            $lastPositionSascar = $this->sascarService->getLastPosition($numberPlate);
             $lastPositionWS = $this->getLastPositionWS($numberPlate);
-
             $lastPositionBD = $this->getLastPositionBD($numberPlate);
-
-            return response()->json(array_merge($lastPositionWS, $lastPositionBD));
+            return response()->json(array_merge($lastPositionSascar, $lastPositionWS, $lastPositionBD));
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], self::CODE_INTERNAL_ERROR);
         }
@@ -77,11 +75,5 @@ class HomeController extends Controller
             'longitude' => floatval($ultimaPosicao->lupo_longitude),
             'data_hora' => $ultimaPosicao->lupo_data_status,
         ];
-    }
-
-    public function getAutotracAccounts()
-    {
-        $response = $this->autotracService->getAccounts();
-        return response()->json($response);
     }
 }

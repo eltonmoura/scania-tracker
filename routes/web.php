@@ -23,7 +23,7 @@ $router->post('auth/login', 'AuthController@login');
 $router->post('auth/forgot-password', 'AuthController@forgotPassword');
 
 // Authenticated area
-// $router->group(['middleware' => 'auth:api'], function () use ($router) {
+$router->group(['middleware' => 'auth:api'], function () use ($router) {
     // AuthController
     $router->group(['prefix' => 'auth'], function () use ($router) {
         $router->get('/me', 'AuthController@me');
@@ -44,4 +44,4 @@ $router->post('auth/forgot-password', 'AuthController@forgotPassword');
 
     $router->get('autotrac/accounts', 'HomeController@getAutotracAccounts');
 
-// });
+});
