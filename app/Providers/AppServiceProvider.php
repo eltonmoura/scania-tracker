@@ -5,7 +5,9 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use GuzzleHttp\Client as HttpClient;
 use App\Services\AutotracService;
+use App\Services\OnixsatService;
 use App\Services\SascarService;
+use App\Services\SighraService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,8 +28,16 @@ class AppServiceProvider extends ServiceProvider
             return new AutotracService();
         });
 
+        $this->app->bind(OnixsatService::class, function ($app) {
+            return new OnixsatService();
+        });
+
         $this->app->bind(SascarService::class, function ($app) {
             return new SascarService();
+        });
+
+        $this->app->bind(SighraService::class, function ($app) {
+            return new SighraService();
         });
     }
 }
