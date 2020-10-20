@@ -27,7 +27,7 @@ class HomeController extends Controller
             return response()->json(array_merge(
                 $this->sascarService->getLastPosition($numberPlate),
                 $this->onixsatService->getLastPosition($numberPlate),
-                // $this->sighraService->getLastPosition($numberPlate),
+                $this->sighraService->getLastPosition($numberPlate),
                 $this->autotracService->getLastPosition($numberPlate)
             ));
 
