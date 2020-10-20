@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services;
+
 use App\Services\Contracts\TracServiceInterface;
 use App\Models\SascarVeiculo;
 use App\Models\SascarPacotePosicao;

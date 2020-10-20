@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use GuzzleHttp\Client as HttpClient;
 use App\Services\Contracts\TracServiceInterface;
+use GuzzleHttp\Client as HttpClient;
 
 class AutotracService implements TracServiceInterface
 {
@@ -19,27 +19,6 @@ class AutotracService implements TracServiceInterface
     public function getLastPosition($numberPlat)
     {
         return [];
-    }
-
-    public function getAccounts()
-    {
-        $response = $this->httpClient->get('/accounts');
-        return json_decode($response->getBody(), true);
-    }
-
-    public function getExpandedAlerts($vehicleCode)
-    {
-        //
-    }
-
-    public function getReturnMessages($vehicleCode)
-    {
-        //
-    }
-
-    public function getForwardMessages($vehicleCode)
-    {
-        //
     }
 
     private function setHeader()
