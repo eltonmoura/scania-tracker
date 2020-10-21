@@ -18,6 +18,7 @@ class Kernel extends ConsoleKernel
         Commands\PurgeDataBaseCommand::class,
         Commands\SascarVeiculosImportCommand::class,
         Commands\SascarPacotePosicaoImportCommand::class,
+        Commands\AutotracImportCommand::class,
     ];
 
     /**

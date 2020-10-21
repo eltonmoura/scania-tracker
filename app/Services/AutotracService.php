@@ -3,33 +3,67 @@
 namespace App\Services;
 
 use App\Services\Contracts\TracServiceInterface;
-use GuzzleHttp\Client as HttpClient;
+use App\Models\AutotracPosition;
 
 class AutotracService implements TracServiceInterface
 {
-    protected $httpClient;
-    protected $header;
-
-    public function __construct()
+    public function getLastPosition($numberPlate)
     {
-        $this->httpClient = new HttpClient(['base_uri' => env('AUTOTRAC_URL')]);
-        $this->setHeader();
+        $position = AutotracPosition::where('VehicleName', $numberPlate)
+            ->orderBy('PositionTime', 'desc')
+            ->first();
+
+        return (empty($position))
+            ? []
+            : [
+                'placa' => $numberPlate,
+                'latitude' => floatval($position->Latitude),
+                'longitude' => floatval($position->Longitude),
+                'data_hora' => $position->PositionTime,
+            ];
     }
 
-    public function getLastPosition($numberPlat)
-    {
-        return [];
+    public function importPositions() {
+        $accounts = AutotracClient::getAccounts();
+        array_map(function ($account) {
+            $vehicles = AutotracClient::getVehicles($account['Code']);
+            array_map(function ($vehicle) {
+                $positions = AutotracClient::getPositions(
+                    $account['Code'],
+                    $vehicle['Code'],
+                    $this->getLastPositionTime()
+                );
+                $this->savePositionsToDB($positions['Data']);
+            }, $vehicles['Data']);
+            return true;
+        }, $accounts);
     }
 
-    private function setHeader()
+    private function savePositionsToDB($data)
     {
-        $user = env('AUTOTRAC_USER');
-        $password = env('AUTOTRAC_PASSWORD');
+        foreach ($data as $key => $value) {
+            $row = [];
+            foreach ($value as $keyField => $valueField) {
+                // trata o booleano que vem como texto
+                if (in_array($valueField, ['true', 'false'])) {
+                    $row[$keyField] = ($valueField == 'true');
+                    continue;
+                }
 
-        $this->header = [
-            'Content-Type' => 'application/json',
-            'Ocp-Apim-Subscription-Key' => env('AUTOTRAC_SUBSCRIPTION_KEY'),
-            'Authorization' => "Basic $user@tcmlog:$password",
-        ];
+                $row[$keyField] = $valueField;
+            }
+            MensaAutotracPositiongemCb::create($row);
+        }
+        return true;
+    }
+
+    private function getLastPositionTime()
+    {
+        $positionTime = \DB::table('autotrac_positions')->max('PositionTime');
+
+        $positionTime = ($positionTime) ? $positionTime : null;
+        print("Last PositionTime: $maxId \n");
+
+        return $positionTime;
     }
 }
