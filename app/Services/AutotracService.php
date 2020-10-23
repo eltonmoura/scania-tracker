@@ -3,33 +3,80 @@
 namespace App\Services;
 
 use App\Services\Contracts\TracServiceInterface;
-use GuzzleHttp\Client as HttpClient;
+use App\Models\AutotracPosition;
+use Carbon\Carbon;
 
 class AutotracService implements TracServiceInterface
 {
-    protected $httpClient;
-    protected $header;
-
-    public function __construct()
+    public function getLastPosition($numberPlate)
     {
-        $this->httpClient = new HttpClient(['base_uri' => env('AUTOTRAC_URL')]);
-        $this->setHeader();
+        $position = AutotracPosition::where('VehicleName', $numberPlate)
+            ->orderBy('PositionTime', 'desc')
+            ->first();
+
+        return (empty($position))
+            ? []
+            : [
+                'placa' => $numberPlate,
+                'latitude' => floatval($position->Latitude),
+                'longitude' => floatval($position->Longitude),
+                'data_hora' => Carbon::createFromTimeString($position->PositionTime)
+                    ->timezone('America/Sao_Paulo')
+                    ->toDateTimeString(),
+            ];
     }
 
-    public function getLastPosition($numberPlat)
-    {
-        return [];
+    public function importPositions() {
+        $accounts = AutotracClient::getAccounts();
+        array_map(function ($account) {
+            $vehicles = AutotracClient::getVehicles($account['Code']);
+            array_map(function ($vehicle) use ($account) {
+                $positions = AutotracClient::getPositions(
+                    $account['Code'],
+                    $vehicle['Code'],
+                    $this->getLastPositionTime($vehicle['Name'])
+                );
+                $this->savePositionsToDB($positions['Data']);
+            }, $vehicles['Data']);
+            return true;
+        }, $accounts);
     }
 
-    private function setHeader()
+    private function savePositionsToDB($data)
     {
-        $user = env('AUTOTRAC_USER');
-        $password = env('AUTOTRAC_PASSWORD');
+        foreach ($data as $key => $value) {
+            $row = [];
+            foreach ($value as $keyField => $valueField) {
+                // trata o booleano que vem como texto
+                if (in_array($valueField, ['true', 'false'])) {
+                    $row[$keyField] = ($valueField == 'true');
+                    continue;
+                }
 
-        $this->header = [
-            'Content-Type' => 'application/json',
-            'Ocp-Apim-Subscription-Key' => env('AUTOTRAC_SUBSCRIPTION_KEY'),
-            'Authorization' => "Basic $user@tcmlog:$password",
-        ];
+                // Coloca a data no formato do banco
+                if (in_array($keyField, ['PositionTime', 'ReceivedTime'])) {
+                    $row[$keyField] = (new Carbon($valueField))->toDateTimeString();
+                    continue;
+                }
+
+                $row[$keyField] = $valueField;
+            }
+            AutotracPosition::create($row);
+        }
+        return true;
+    }
+
+    private function getLastPositionTime($vehicleName)
+    {
+        $positionTime = \DB::table('autotrac_positions')
+            ->where('VehicleName', $vehicleName)->max('PositionTime');
+
+        // adiciona 1 minuto
+        $positionTime = ($positionTime)
+            ? (new Carbon($positionTime))->addMinutes(1)->toDateTimeString()
+            : null;
+        print("Last PositionTime: $positionTime \n");
+
+        return $positionTime;
     }
 }
