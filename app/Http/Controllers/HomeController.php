@@ -25,10 +25,10 @@ class HomeController extends Controller
     {
         try {
             return response()->json(array_merge(
-                // $this->sascarService->getLastPosition($numberPlate),
-                // $this->onixsatService->getLastPosition($numberPlate),
-                // $this->sighraService->getLastPosition($numberPlate),
-                $this->autotracService->getLastPosition($numberPlate)
+                $this->sascarService->getLastPosition($numberPlate),
+                $this->onixsatService->getLastPosition($numberPlate),
+                $this->sighraService->getLastPosition($numberPlate),
+                // $this->autotracService->getLastPosition($numberPlate)
             ));
 
         } catch (\Exception $e) {

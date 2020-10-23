@@ -35,6 +35,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('sascar:import-veiculos')->everyTenMinutes();
         $schedule->command('sascar:import-pacote-posicao')->everyMinute();
 
+        // $schedule->command('autotrac:import')->everyMinute();
+
         // Executa todos os dias as 03hs da madrugada
         $schedule->command('purge:database')->dailyAt('03:00');
     }
