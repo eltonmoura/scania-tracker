@@ -19,7 +19,7 @@ class AutotracClient
             ],
         ];
 
-        $client = new HttpClient();
+        $client = new HttpClient(['verify' => false]);
         print("REQUEST: $url/$path\n");
         $result = $client->request('GET', "$url/$path", $options);
         $body = json_decode($result->getBody(), true);

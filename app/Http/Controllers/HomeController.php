@@ -28,7 +28,7 @@ class HomeController extends Controller
                 $this->sascarService->getLastPosition($numberPlate),
                 $this->onixsatService->getLastPosition($numberPlate),
                 $this->sighraService->getLastPosition($numberPlate),
-                // $this->autotracService->getLastPosition($numberPlate)
+                $this->autotracService->getLastPosition($numberPlate)
             ));
 
         } catch (\Exception $e) {
