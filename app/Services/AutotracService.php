@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Services\Contracts\TracServiceInterface;
 use App\Models\AutotracPosition;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class AutotracService implements TracServiceInterface
 {
@@ -31,6 +32,7 @@ class AutotracService implements TracServiceInterface
         array_map(function ($account) {
             $vehicles = AutotracClient::getVehicles($account['Code']);
             array_map(function ($vehicle) use ($account) {
+                Log::info("AutotracService:importPositions: atualizando " . $vehicle['Name']);
                 $positions = AutotracClient::getPositions(
                     $account['Code'],
                     $vehicle['Code'],
@@ -38,12 +40,14 @@ class AutotracService implements TracServiceInterface
                 );
                 $this->savePositionsToDB($positions['Data']);
             }, $vehicles['Data']);
-            return true;
         }, $accounts);
+
+        return true;
     }
 
     private function savePositionsToDB($data)
     {
+
         foreach ($data as $key => $value) {
             $row = [];
             foreach ($value as $keyField => $valueField) {
@@ -71,12 +75,17 @@ class AutotracService implements TracServiceInterface
         $positionTime = \DB::table('autotrac_positions')
             ->where('VehicleName', $vehicleName)->max('PositionTime');
 
+        // A consulta tem um intervalo máximo de 72 hs
+        $minDate = (new Carbon())->subHours(72);
+        if ($positionTime && $minDate->greaterThan(new Carbon($positionTime))) {
+            $positionTime = $minDate->toDateTimeString();
+        }
+
         // adiciona 1 minuto
         $positionTime = ($positionTime)
             ? (new Carbon($positionTime))->addMinutes(1)->toDateTimeString()
             : null;
-        print("Last PositionTime: $positionTime \n");
-
+        Log::info("AutotracService:getLastPositionTime $positionTime");
         return $positionTime;
     }
 }

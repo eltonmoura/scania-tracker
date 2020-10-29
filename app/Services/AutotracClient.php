@@ -20,11 +20,13 @@ class AutotracClient
         ];
 
         $client = new HttpClient(['verify' => false]);
-        print("REQUEST: $url/$path\n");
+
         $result = $client->request('GET', "$url/$path", $options);
         $body = json_decode($result->getBody(), true);
-        print("RESULT: ");
-        print_r($body);
+        if ($result->getStatusCode() !== 200) {
+            throw new Exception("AutotracClient: \n$body", 1);
+        }
+
         return $body; 
     }
 
