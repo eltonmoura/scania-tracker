@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Services\Contracts\TracServiceInterface;
 use App\Models\SascarVeiculo;
 use App\Models\SascarPacotePosicao;
+use Illuminate\Support\Facades\Log;
 
 class SascarService implements TracServiceInterface
 {
@@ -63,6 +64,8 @@ class SascarService implements TracServiceInterface
         $idFinal,
         $quantidade = 1000
     ) {
+        Log::info("SascarService:obterPacotePosicaoPorRangeWS [idInicio: {$idInicio}, idFinal: {$idFinal}, quantidade: {$quantidade}]");
+
         $function = 'obterPacotePosicaoPorRange';
         $arguments = [
             $function => [
@@ -98,6 +101,7 @@ class SascarService implements TracServiceInterface
 
     public function saveVeiculosToDB($data)
     {
+        $placas = [];
         foreach ($data as $item) {
             if (!property_exists($item, 'idVeiculo')) {
                 break;
@@ -105,18 +109,32 @@ class SascarService implements TracServiceInterface
             $sascarVeiculo = SascarVeiculo::firstOrNew(['idVeiculo' => $item->idVeiculo]);
             $sascarVeiculo->fill((array) $item);
             $sascarVeiculo->save();
+            $placas[] = $item->placa;
         }
 
+        Log::info("SascarService:saveVeiculosToDB placas: " . implode(', ', $placas));
         return true;
     }
 
-    public function getPacotePosicaoFromWS()
+    public function getPacotePosicaoFromWS($idInicio = null)
     {
+        $quantidade = 1000;
+
+        // forçar um início
+        if ($idInicio) {
+            return $this->obterPacotePosicaoPorRangeWS(
+                $idInicio,
+                $idInicio + $quantidade,
+                $quantidade
+            );
+        }
+
         $maxId = \DB::table('sascar_pacote_posicao')->max('idPacote') ?: 0;
 
-        $quantidade = 1000;
         $idInicio = $maxId + 1;
         $idFinal = $idInicio + $quantidade;
+
+        Log::info("SascarService:getPacotePosicaoFromWS maxId: {$maxId}");
 
         return ($maxId === 0) ?
             $this->obterPacotePosicoesWS()
@@ -129,10 +147,14 @@ class SascarService implements TracServiceInterface
 
     public function savePacotePosicaoToDB($data)
     {
+        Log::info("SascarService:savePacotePosicaoToDB count: " . count($data));
         foreach ($data as $item) {
             if (!property_exists($item, 'idPacote')) {
                 break;
             }
+
+            $item->uf = substr($item->uf, 0, 2);
+
             $sascarPacotePosicao = SascarPacotePosicao::firstOrNew(['idPacote' => $item->idPacote]);
             $sascarPacotePosicao->fill((array) $item);
             $sascarPacotePosicao->save();
