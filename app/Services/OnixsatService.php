@@ -8,6 +8,7 @@ use App\Models\Veiculo;
 use Carbon\Carbon;
 use \ZipArchive;
 use \Exception;
+use Illuminate\Support\Facades\Log;
 
 class OnixsatService implements TracServiceInterface
 {
@@ -19,7 +20,7 @@ class OnixsatService implements TracServiceInterface
         }
 
         $mensagens = MensagemCb::where('veiid', $veiculo->veiid)
-            ->orderBy('dt', 'desc')
+            ->orderBy('id', 'desc')
             ->first();
 
         if (empty($mensagens)) {
@@ -37,21 +38,21 @@ class OnixsatService implements TracServiceInterface
 
     public function importVeiculos()
     {
+        Log::info("OnixsatService:importVeiculos");
         $this->setTempFile('RequestVeiculo');
         $this->requestOnixsat('RequestVeiculo');
         $data = $this->getContentFromZipFile('Veiculo');
         $this->importVeiculosToDataBase($data);
-        print("Done." . PHP_EOL);
     }
 
     public function importMensagemCb()
     {
+        Log::info("OnixsatService:importMensagemCb");
         $this->setTempFile('RequestMensagemCB');
         $maxId = $this->getMaxId();
         $this->requestOnixsat('RequestMensagemCB', ['mId' =>  $maxId]);
         $data = $this->getContentFromZipFile('MensagemCB');
         $this->importMensagemCbToDataBase($data);
-        print("Done." . PHP_EOL);
     }
 
     private function setTempFile($name)
@@ -66,17 +67,14 @@ class OnixsatService implements TracServiceInterface
     private function getMaxId()
     {
         $maxId = \DB::table('mensagem_cb')->max('mid');
-
         $maxId = (is_int($maxId)) ? $maxId : 1;
-        print("max(mId): $maxId \n");
-
+        Log::info("OnixsatService:getMaxId $maxId");
         return $maxId;
     }
 
     private function importVeiculosToDataBase($data)
     {
-        print("Importando para o banco ..." . PHP_EOL);
-
+        $placas = [];
         foreach ($data as $key => $value) {
             $row = [];
             foreach ($value as $keyField => $valueField) {
@@ -103,18 +101,21 @@ class OnixsatService implements TracServiceInterface
                 $row[$keyField] = $valueField;
             }
 
+            $placas[] = $row['placa'];
+
             // Atualiza ou cria um novo
             $veiculo = Veiculo::firstOrNew(['veiid' => $row['veiid']]);
             $veiculo->fill($row);
             $veiculo->save();
         }
+
+        Log::info("OnixsatService:importVeiculosToDataBase atualizando " . implode(', ', $placas));
         return true;
     }
 
     private function importMensagemCbToDataBase($data)
     {
-        print("Importando para o banco ..." . PHP_EOL);
-
+        $lastDate = null;
         foreach ($data as $key => $value) {
             $row = [];
             foreach ($value as $keyField => $valueField) {
@@ -147,15 +148,16 @@ class OnixsatService implements TracServiceInterface
                 $row[$keyField] = $valueField;
             }
 
+            $lastDate = $row['dt'];
             MensagemCb::create($row);
         }
+
+        Log::info("OnixsatService:importMensagemCbToDataBase count:" . count($data) . " lastDate: " . $lastDate);
         return true;
     }
 
     private function requestOnixsat($endpoint, $params=[])
     {
-        print("Baixando os dados de $endpoint ..." . PHP_EOL);
-
         $onixsat = new OnixsatClient();
         $response = $onixsat->request($endpoint, $params);
         file_put_contents($this->tempFile, $response);
@@ -164,8 +166,6 @@ class OnixsatService implements TracServiceInterface
 
     private function getContentFromZipFile($tag)
     {
-        print("Extraindo os dados ..." . PHP_EOL);
-
         $zip = new ZipArchive();
         $zip->open($this->tempFile);
 
@@ -180,6 +180,10 @@ class OnixsatService implements TracServiceInterface
             }
             $result = array_merge($result, $array[$tag]);
         }
+
+        $zip->close();
+        // remove file
+        unlink($this->tempFile);
         return $result;
     }
 }
