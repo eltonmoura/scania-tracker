@@ -27,7 +27,7 @@ class CreateVeiculos extends Migration
             $table->integer('tp')->nullable();
             $table->integer('ta')->nullable();
             $table->integer('eqp')->nullable();
-            $table->string('mot', 40)->nullable();
+            $table->string('mot', 100)->nullable();
             $table->string('prop', 50)->nullable();
             $table->boolean('die')->nullable();
             $table->boolean('ie')->nullable();

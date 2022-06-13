@@ -38,21 +38,29 @@ class OnixsatService implements TracServiceInterface
 
     public function importVeiculos()
     {
-        Log::info("OnixsatService:importVeiculos");
-        $this->setTempFile('RequestVeiculo');
-        $this->requestOnixsat('RequestVeiculo');
-        $data = $this->getContentFromZipFile('Veiculo');
-        $this->importVeiculosToDataBase($data);
+        try {
+            Log::info("OnixsatService:importVeiculos");
+            $this->setTempFile('RequestVeiculo');
+            $this->requestOnixsat('RequestVeiculo');
+            $data = $this->getContentFromZipFile('Veiculo');
+            $this->importVeiculosToDataBase($data);
+        } catch (Exception $e) {
+            Log::error('OnixsatService => ' . $e->getMessage());
+        }
     }
 
     public function importMensagemCb()
     {
-        Log::info("OnixsatService:importMensagemCb");
-        $this->setTempFile('RequestMensagemCB');
-        $maxId = $this->getMaxId();
-        $this->requestOnixsat('RequestMensagemCB', ['mId' =>  $maxId]);
-        $data = $this->getContentFromZipFile('MensagemCB');
-        $this->importMensagemCbToDataBase($data);
+        try {
+            Log::info("OnixsatService:importMensagemCb");
+            $this->setTempFile('RequestMensagemCB');
+            $maxId = $this->getMaxId();
+            $this->requestOnixsat('RequestMensagemCB', ['mId' =>  $maxId]);
+            $data = $this->getContentFromZipFile('MensagemCB');
+            $this->importMensagemCbToDataBase($data);
+        } catch (Exception $e) {
+            Log::error('OnixsatService => ' . $e->getMessage());
+        }
     }
 
     private function setTempFile($name)
@@ -152,7 +160,7 @@ class OnixsatService implements TracServiceInterface
             MensagemCb::create($row);
         }
 
-        Log::info("OnixsatService:importMensagemCbToDataBase count:" . count($data) . " lastDate: " . $lastDate);
+        Log::info("OnixsatService:importMensagemCbToDataBase count: " . count($data) . " lastDate: " . $lastDate);
         return true;
     }
 
@@ -184,6 +192,11 @@ class OnixsatService implements TracServiceInterface
         $zip->close();
         // remove file
         unlink($this->tempFile);
+
+        if (isset($result['erro'])) {
+            throw new Exception($result['erro'], $result['codigo']);
+        }
+
         return $result;
     }
 }

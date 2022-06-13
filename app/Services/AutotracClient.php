@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use GuzzleHttp\Client as HttpClient;
+use Illuminate\Support\Facades\Log;
 
 class AutotracClient
 {
@@ -17,11 +18,16 @@ class AutotracClient
                 'Ocp-Apim-Subscription-Key' => env('AUTOTRAC_SUBSCRIPTION_KEY'),
                 'Authorization' => "Basic $user:$password",
             ],
+            'timeout' => 5,
         ];
 
         $client = new HttpClient(['verify' => false]);
-
+        $t1 = microtime(1);
         $result = $client->request('GET', "$url/$path", $options);
+        $t2 = microtime(1);
+
+        Log::info('AutotracClient ' . $path . ' - ' . ($t2 - $t1) . ' microsegundos');
+
         $body = json_decode($result->getBody(), true);
         if ($result->getStatusCode() !== 200) {
             throw new Exception("AutotracClient: \n$body", 1);

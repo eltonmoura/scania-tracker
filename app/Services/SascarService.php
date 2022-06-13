@@ -147,7 +147,7 @@ class SascarService implements TracServiceInterface
 
     public function savePacotePosicaoToDB($data)
     {
-        Log::info("SascarService:savePacotePosicaoToDB count: " . count($data));
+        $lastDate = null;
         foreach ($data as $item) {
             if (!property_exists($item, 'idPacote')) {
                 break;
@@ -158,8 +158,11 @@ class SascarService implements TracServiceInterface
             $sascarPacotePosicao = SascarPacotePosicao::firstOrNew(['idPacote' => $item->idPacote]);
             $sascarPacotePosicao->fill((array) $item);
             $sascarPacotePosicao->save();
+
+            $lastDate = $item->dataPosicao;
         }
 
+        Log::info("SascarService:savePacotePosicaoToDB count: " . count($data) . " lastDate: $lastDate");
         return true;
     }
 }

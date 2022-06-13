@@ -28,21 +28,25 @@ class AutotracService implements TracServiceInterface
     }
 
     public function importPositions() {
-        $accounts = AutotracClient::getAccounts();
-        array_map(function ($account) {
-            $vehicles = AutotracClient::getVehicles($account['Code']);
-            array_map(function ($vehicle) use ($account) {
-                Log::info("AutotracService:importPositions: atualizando " . $vehicle['Name']);
-                $positions = AutotracClient::getPositions(
-                    $account['Code'],
-                    $vehicle['Code'],
-                    $this->getLastPositionTime($vehicle['Name'])
-                );
-                $this->savePositionsToDB($positions['Data']);
-            }, $vehicles['Data']);
-        }, $accounts);
+        try {
+            $accounts = AutotracClient::getAccounts();
+            array_map(function ($account) {
+                $vehicles = AutotracClient::getVehicles($account['Code']);
+                array_map(function ($vehicle) use ($account) {
+                    Log::info("AutotracService:importPositions: atualizando " . $vehicle['Name']);
+                    $positions = AutotracClient::getPositions(
+                        $account['Code'],
+                        $vehicle['Code'],
+                        $this->getLastPositionTime($vehicle['Name'])
+                    );
+                    $this->savePositionsToDB($positions['Data']);
+                }, $vehicles['Data']);
+            }, $accounts);
 
-        return true;
+            return true;
+        } catch (Exception $e) {
+            Log::error('AutotracService => ' . $e->getMessage());
+        }
     }
 
     private function savePositionsToDB($data)
