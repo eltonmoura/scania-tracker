@@ -21,6 +21,9 @@ class TresSTecnologiaService implements TracServiceInterface
 
     public function getLastPosition($numberPlate)
     {
+        // inserts a space at position 3
+        $numberPlate = substr_replace($numberPlate, ' ', 3, 0);
+
         Log::info("TresSTecnologiaService:getLastPosition [$numberPlate]");
 
         $function = 'ListaUltimaPosicaoVeiculoPlaca';
@@ -28,7 +31,7 @@ class TresSTecnologiaService implements TracServiceInterface
             $function => [
                 'Usuario' => $this->user,
                 'Senha' => $this->password,
-                'Placa' => urldecode($numberPlate),
+                'Placa' => $numberPlate,
             ]
         ];
 

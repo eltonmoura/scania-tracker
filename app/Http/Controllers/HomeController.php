@@ -27,11 +27,14 @@ class HomeController extends Controller
     public function getLastPosition($numberPlate)
     {
         try {
+            // remove invalid characters
+            $numberPlate = preg_replace('/\W/', '', urldecode($numberPlate));
+
             return response()->json(array_merge(
                 $this->sascarService->getLastPosition($numberPlate),
                 $this->onixsatService->getLastPosition($numberPlate),
                 $this->sighraService->getLastPosition($numberPlate),
-                $this->autotracService->getLastPosition($numberPlate)
+                $this->autotracService->getLastPosition($numberPlate),
                 $this->treSTecnologiaService->getLastPosition($numberPlate)
             ));
 
