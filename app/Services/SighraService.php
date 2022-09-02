@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Services\Contracts\TracServiceInterface;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class SighraService implements TracServiceInterface
 {
@@ -31,7 +32,9 @@ class SighraService implements TracServiceInterface
             'modelo' => $ultimaPosicao->cmar_nome,
             'latitude' => floatval($ultimaPosicao->lupo_latitude),
             'longitude' => floatval($ultimaPosicao->lupo_longitude),
-            'data_hora' => $ultimaPosicao->lupo_data_status,
+            'data_hora' => Carbon::createFromTimeString($ultimaPosicao->lupo_data_status)
+                ->format('d/m/Y H:i:s'),
+            'origin' => 'Sighra',
         ];
     }
 }

@@ -55,6 +55,7 @@ class TresSTecnologiaService implements TracServiceInterface
             'latitude' => $position['Latitude'],
             'longitude' => $position['Longitude'],
             'data_hora' => $position['Data'],
+            'origin' => 'TresSTecnologia',
         ];
     }
 }

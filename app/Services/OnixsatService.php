@@ -32,7 +32,8 @@ class OnixsatService implements TracServiceInterface
             'modelo' => $veiculo->ident,
             'latitude' => floatval($mensagens->lat),
             'longitude' => floatval($mensagens->lon),
-            'data_hora' => $mensagens->dt,
+            'data_hora' => Carbon::createFromFormat('Y-m-d H:i:s', $mensagens->dt)->format('d/m/Y H:i:s'),
+            'origin' => 'Onixsat',
         ];
     }
 

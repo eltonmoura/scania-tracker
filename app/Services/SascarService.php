@@ -6,6 +6,7 @@ use App\Services\Contracts\TracServiceInterface;
 use App\Models\SascarVeiculo;
 use App\Models\SascarPacotePosicao;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class SascarService implements TracServiceInterface
 {
@@ -39,7 +40,8 @@ class SascarService implements TracServiceInterface
             'modelo' => '',
             'latitude' => floatval($posicao->latitude),
             'longitude' => floatval($posicao->longitude),
-            'data_hora' => $posicao->dataPosicao,
+            'data_hora' => Carbon::createFromTimeString($posicao->dataPosicao)->format('d/m/Y H:i:s'),
+            'origin' => 'Sascar',
         ];
     }
 
