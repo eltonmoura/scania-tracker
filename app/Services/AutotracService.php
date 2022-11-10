@@ -23,7 +23,8 @@ class AutotracService implements TracServiceInterface
             floatval($ultimaPosicao->lupo_longitude),
             Carbon::createFromTimeString($position->PositionTime)
                     ->timezone('America/Sao_Paulo')
-                    ->toDateTimeString()
+                    ->format('d/m/Y H:i:s')
+            
         );
     }
 
