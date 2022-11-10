@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Services\Contracts\TracServiceInterface;
+use App\Services\Contracts\TracResponse;
 use App\Models\SascarVeiculo;
 use App\Models\SascarPacotePosicao;
 use Illuminate\Support\Facades\Log;
@@ -19,7 +20,7 @@ class TresSTecnologiaService implements TracServiceInterface
         $this->password = env('TRESSTECNOLOGIA_PASSWORD');
     }
 
-    public function getLastPosition($numberPlate)
+    public function getLastPosition($numberPlate): ?TracResponse
     {
         // inserts a space at position 3
         $numberPlate = substr_replace($numberPlate, ' ', 3, 0);
@@ -49,13 +50,13 @@ class TresSTecnologiaService implements TracServiceInterface
         $xml = simplexml_load_string($content);
 
         $position = (array)$xml->tbPosicao;
-        return [
-            'placa' => $position['Placa'],
-            'modelo' => $position['Modelo'],
-            'latitude' => $position['Latitude'],
-            'longitude' => $position['Longitude'],
-            'data_hora' => $position['Data'],
-            'origin' => 'TresSTecnologia',
-        ];
+
+        return new TracResponse(
+            $position['Placa'],
+            $position['Modelo'],
+            $position['Latitude'],
+            $position['Longitude'],
+            $position['Data']
+        );
     }
 }

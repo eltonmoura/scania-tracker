@@ -19,6 +19,8 @@ class Kernel extends ConsoleKernel
         Commands\SascarVeiculosImportCommand::class,
         Commands\SascarPacotePosicaoImportCommand::class,
         Commands\AutotracImportCommand::class,
+        Commands\OmnilinkVeiculosImportCommand::class,
+        Commands\OmnilinkPositionsImportCommand::class,
     ];
 
     /**
@@ -39,5 +41,8 @@ class Kernel extends ConsoleKernel
 
         // Executa todos os dias as 03hs da madrugada
         $schedule->command('purge:database')->dailyAt('03:00');
+
+        $schedule->command('omnilink:import-veiculos')->everyTenMinutes();
+        $schedule->command('omnilink:import-positions')->everyMinute();
     }
 }

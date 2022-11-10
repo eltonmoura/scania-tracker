@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Services\Contracts\TracServiceInterface;
+use App\Services\Contracts\TracResponse;
 use App\Models\MensagemCb;
 use App\Models\Veiculo;
 use Carbon\Carbon;
@@ -12,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 
 class OnixsatService implements TracServiceInterface
 {
-    public function getLastPosition($numberPlate)
+    public function getLastPosition($numberPlate): ?TracResponse
     {
         $veiculo = Veiculo::where('placa', $numberPlate)->first();
         if (empty($veiculo)) {
@@ -27,14 +28,13 @@ class OnixsatService implements TracServiceInterface
             return [];
         }
 
-        return [
-            'placa' => $numberPlate,
-            'modelo' => $veiculo->ident,
-            'latitude' => floatval($mensagens->lat),
-            'longitude' => floatval($mensagens->lon),
-            'data_hora' => Carbon::createFromFormat('Y-m-d H:i:s', $mensagens->dt)->format('d/m/Y H:i:s'),
-            'origin' => 'Onixsat',
-        ];
+        return new TracResponse(
+            $numberPlate,
+            $veiculo->ident,
+            floatval($mensagens->lat),
+            floatval($mensagens->lon),
+            Carbon::createFromFormat('Y-m-d H:i:s', $mensagens->dt)->format('d/m/Y H:i:s')
+        );
     }
 
     public function importVeiculos()

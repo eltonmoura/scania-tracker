@@ -7,6 +7,7 @@ use App\Services\OnixsatService;
 use App\Services\SighraService;
 use App\Services\AutotracService;
 use App\Services\TresSTecnologiaService;
+use App\Services\OmnilinkService;
 
 class HomeController extends Controller
 {
@@ -15,13 +16,15 @@ class HomeController extends Controller
         OnixsatService $onixsatService,
         SighraService $sighraService,
         AutotracService $autotracService,
-        TresSTecnologiaService $treSTecnologiaService
+        TresSTecnologiaService $treSTecnologiaService,
+        OmnilinkService $omnilinkService
     ) {
         $this->sascarService = $sascarService;
         $this->onixsatService = $onixsatService;
         $this->sighraService = $sighraService;
         $this->autotracService = $autotracService;
         $this->treSTecnologiaService = $treSTecnologiaService;
+        $this->omnilinkService = $omnilinkService;
     }
 
     public function getLastPosition($numberPlate)
@@ -30,13 +33,25 @@ class HomeController extends Controller
             // remove invalid characters
             $numberPlate = preg_replace('/\W/', '', urldecode($numberPlate));
 
-            return response()->json(array_merge(
-                $this->sascarService->getLastPosition($numberPlate),
-                $this->onixsatService->getLastPosition($numberPlate),
-                $this->sighraService->getLastPosition($numberPlate),
-                $this->autotracService->getLastPosition($numberPlate),
-                $this->treSTecnologiaService->getLastPosition($numberPlate)
-            ));
+            // vai procurar em cada serviço nessa ordem
+            $services = [
+                // 'sascarService',
+                // 'onixsatService',
+                // 'sighraService',
+                // 'autotracService',
+                // 'treSTecnologiaService',
+                'omnilinkService',
+            ];
+
+            foreach ($services as $service) {
+                if ($response = $this->$service->getLastPosition($numberPlate)) {
+                    // retorna o primeiro que encontrar
+                    return response()->json($response->toArray());
+                }
+            }
+
+            // não encontrou
+            return response()->json([]);
 
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], self::CODE_INTERNAL_ERROR);

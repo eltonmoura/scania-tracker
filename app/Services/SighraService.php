@@ -3,12 +3,13 @@
 namespace App\Services;
 
 use App\Services\Contracts\TracServiceInterface;
+use App\Services\Contracts\TracResponse;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class SighraService implements TracServiceInterface
 {
-    public function getLastPosition($numberPlate)
+    public function getLastPosition($numberPlate): ?TracResponse
     {
         $ultimaPosicao = DB::connection('mysql2')
             ->table('view_ultima_posicao')
@@ -27,14 +28,12 @@ class SighraService implements TracServiceInterface
             return [];
         }
 
-        return [
-            'placa' => $numberPlate,
-            'modelo' => $ultimaPosicao->cmar_nome,
-            'latitude' => floatval($ultimaPosicao->lupo_latitude),
-            'longitude' => floatval($ultimaPosicao->lupo_longitude),
-            'data_hora' => Carbon::createFromTimeString($ultimaPosicao->lupo_data_status)
-                ->format('d/m/Y H:i:s'),
-            'origin' => 'Sighra',
-        ];
+        return new TracResponse(
+            $numberPlate,
+            $ultimaPosicao->cmar_nome,
+            floatval($ultimaPosicao->lupo_latitude),
+            floatval($ultimaPosicao->lupo_longitude),
+            Carbon::createFromTimeString($ultimaPosicao->lupo_data_status)->format('d/m/Y H:i:s')
+        );
     }
 }
