@@ -3,28 +3,28 @@
 namespace App\Services;
 
 use App\Services\Contracts\TracServiceInterface;
+use App\Services\Contracts\TracResponse;
 use App\Models\AutotracPosition;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class AutotracService implements TracServiceInterface
 {
-    public function getLastPosition($numberPlate)
+    public function getLastPosition($numberPlate): ?TracResponse
     {
         $position = AutotracPosition::where('VehicleName', $numberPlate)
             ->orderBy('PositionTime', 'desc')
             ->first();
 
-        return (empty($position))
-            ? []
-            : [
-                'placa' => $numberPlate,
-                'latitude' => floatval($position->Latitude),
-                'longitude' => floatval($position->Longitude),
-                'data_hora' => Carbon::createFromTimeString($position->PositionTime)
+        if (!empty($position)) return new TracResponse(
+            $numberPlate,
+            null,
+            floatval($ultimaPosicao->lupo_latitude),
+            floatval($ultimaPosicao->lupo_longitude),
+            Carbon::createFromTimeString($position->PositionTime)
                     ->timezone('America/Sao_Paulo')
-                    ->toDateTimeString(),
-            ];
+                    ->toDateTimeString()
+        );
     }
 
     public function importPositions() {

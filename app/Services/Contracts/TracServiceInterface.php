@@ -7,5 +7,5 @@ interface TracServiceInterface
     /**
      * Busca mensagens de envio por veículo
      */
-    public function getLastPosition($numberPlat);
+    public function getLastPosition($numberPlat): ?TracResponse;
 }

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Services\Contracts\TracServiceInterface;
+use App\Services\Contracts\TracResponse;
 use App\Models\SascarVeiculo;
 use App\Models\SascarPacotePosicao;
 use Illuminate\Support\Facades\Log;
@@ -19,7 +20,7 @@ class SascarService implements TracServiceInterface
         $this->password = env('SASCAR_PASSWORD');
     }
 
-    public function getLastPosition($numberPlate)
+    public function getLastPosition($numberPlate): TracResponse
     {
         $veiculo = SascarVeiculo::where('placa', $numberPlate)->first();
         if (empty($veiculo)) {
@@ -34,13 +35,13 @@ class SascarService implements TracServiceInterface
             return [];
         }
 
-        return [
-            'placa' => $numberPlate,
-            'modelo' => '',
-            'latitude' => floatval($posicao->latitude),
-            'longitude' => floatval($posicao->longitude),
-            'data_hora' => $posicao->dataPosicao,
-        ];
+        return new TracResponse(
+            $numberPlate,
+            null,
+            floatval($posicao->latitude),
+            floatval($posicao->longitude),
+            $posicao->dataPosicao
+        );
     }
 
     public function obterPacotePosicoesWS($quantidade = 1000)
