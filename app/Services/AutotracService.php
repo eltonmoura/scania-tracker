@@ -16,7 +16,11 @@ class AutotracService implements TracServiceInterface
             ->orderBy('PositionTime', 'desc')
             ->first();
 
-        if (!empty($position)) return new TracResponse(
+        if (empty($position)) {
+            return null;
+        }
+
+        return new TracResponse(
             $numberPlate,
             null,
             floatval($ultimaPosicao->lupo_latitude),

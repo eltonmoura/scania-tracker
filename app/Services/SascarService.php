@@ -21,11 +21,11 @@ class SascarService implements TracServiceInterface
         $this->password = env('SASCAR_PASSWORD');
     }
 
-    public function getLastPosition($numberPlate): TracResponse
+    public function getLastPosition($numberPlate): ?TracResponse
     {
         $veiculo = SascarVeiculo::where('placa', $numberPlate)->first();
         if (empty($veiculo)) {
-            return [];
+            return null;
         }
 
         $posicao = SascarPacotePosicao::where('idVeiculo', $veiculo->idVeiculo)
@@ -33,7 +33,7 @@ class SascarService implements TracServiceInterface
             ->first();
 
         if (empty($posicao)) {
-            return [];
+            return null;
         }
 
         return new TracResponse(

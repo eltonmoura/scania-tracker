@@ -17,7 +17,7 @@ class OnixsatService implements TracServiceInterface
     {
         $veiculo = Veiculo::where('placa', $numberPlate)->first();
         if (empty($veiculo)) {
-            return [];
+            return null;
         }
 
         $mensagens = MensagemCb::where('veiid', $veiculo->veiid)
@@ -25,7 +25,7 @@ class OnixsatService implements TracServiceInterface
             ->first();
 
         if (empty($mensagens)) {
-            return [];
+            return null;
         }
 
         return new TracResponse(

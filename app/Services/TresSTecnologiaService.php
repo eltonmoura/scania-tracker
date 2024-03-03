@@ -44,7 +44,7 @@ class TresSTecnologiaService implements TracServiceInterface
 
         if (preg_match('/^Erro/', $content)) {
             Log::info($content);
-            return [];
+            return null;
         }
 
         $xml = simplexml_load_string($content);

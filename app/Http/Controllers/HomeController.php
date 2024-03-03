@@ -35,12 +35,12 @@ class HomeController extends Controller
 
             // vai procurar em cada serviço nessa ordem
             $services = [
-                // 'sascarService',
-                // 'onixsatService',
-                // 'sighraService',
-                // 'autotracService',
-                // 'treSTecnologiaService',
+                'sascarService',
+                'onixsatService',
+                'autotracService',
+                'treSTecnologiaService',
                 'omnilinkService',
+                // 'sighraService', // Erro ao acessar o BD
             ];
 
             foreach ($services as $service) {
