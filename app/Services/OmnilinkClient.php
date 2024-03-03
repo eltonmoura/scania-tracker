@@ -2,6 +2,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class OmnilinkClient {
 
@@ -12,59 +13,35 @@ class OmnilinkClient {
         $this->password = env('OMNILINK_PASSWORD');
     }
 
-    public function getAllVehicles()
-    {
-        $function = 'ListarVeiculoTodos';
+    public function getRelatorioDeCoordenadas($numberPlate, $qtdDays) {
+        $timezone = 'America/Sao_Paulo';
+        $endDate = Carbon::now()->timezone($timezone)->format('d/m/Y H:i');
+        $startDate = Carbon::now()->subDays($qtdDays)->format('d/m/Y H:i');
+
+        $function = 'GerarRelatorioDeCoordenadas';
         $arguments = [
             $function => [
                 'Usuario' => $this->user,
                 'Senha' => $this->password,
+                'DataHoraInicial' => $startDate,
+                'DataHoraFinal' => $endDate,
+                'Placa' => $numberPlate,
             ]
         ];
 
         $result = $this->soapClient->__soapCall($function, $arguments, []);
-
-        if (! property_exists($result, 'return')) {
-            Log::error("'return' not exists in: " . print_r($result, true));
-            return [];
-        }
-        
         $data = (array)(simplexml_load_string($result->return));
 
-        if (! array_key_exists('Veiculo', $data)) {
-            Log::error("'Veiculo' not exists in: " . print_r($data, true));
+        if (array_key_exists('msgerro', $data)) {
+            Log::error("Erro getRelatorioDeCoordenadas('$startDate', '$endDate',  '$numberPlate'): " . $data['msgerro']);
             return [];
         }
 
-        return $data['Veiculo'];
-    }
-
-    public function getEvents($lastSequence = 0)
-    {
-        $function = 'ObtemEventosNormais';
-        $arguments = [
-            $function => [
-                'Usuario' => $this->user,
-                'Senha' => $this->password,
-                'UltimoSequencial' => $lastSequence,
-            ]
-        ];
-
-        $result = $this->soapClient->__soapCall($function, $arguments, []);
-
-        if (! property_exists($result, 'return')) {
-            Log::error("'return' not exists in: " . print_r($result, true));
+        if (!array_key_exists('Posicao', $data)) {
+            Log::error("Sem retorno para getRelatorioDeCoordenadas('$startDate', '$endDate',  '$numberPlate'): " . print_r($data, true));
             return [];
         }
 
-        $data = (array)(simplexml_load_string('<content>'.$result->return.'</content>'));
-
-        if (! array_key_exists('TeleEvento', $data)) {
-            Log::error("'TeleEvento' not exists in: " . print_r($data, true));
-            return [];
-        }
-
-        // previnindo que quando tem apenas um objeto retorne como array
-        return is_array($data['TeleEvento']) ? $data['TeleEvento'] : [$data['TeleEvento']];
+        return $data['Posicao'];
     }
 }
