@@ -18,12 +18,12 @@ class OmnilinkService implements TracServiceInterface
 
     public function getLastPosition($numberPlate): ?TracResponse
     {
-        $report = $this->omnilinkClient->getRelatorioDeCoordenadas($numberPlate, 30);
-        $lastPosition = (array)end($report);
+        $report = $this->omnilinkClient->getRelatorioDeCoordenadas($numberPlate, 1);
+        $lastPosition = (is_array($report)) ? (array)end($report) : null;
 
-        // Log::info("lastPosition: " . print_r($lastPosition, true));
-
-        if (!$lastPosition) return null;
+        if (!$lastPosition){
+            return null;
+        }
 
         return new TracResponse(
             $numberPlate,

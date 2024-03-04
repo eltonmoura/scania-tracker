@@ -30,16 +30,18 @@ class OmnilinkClient {
         ];
 
         $result = $this->soapClient->__soapCall($function, $arguments, []);
+        Log::error("result: " . print_r($result, true));
+
         $data = (array)(simplexml_load_string($result->return));
 
         if (array_key_exists('msgerro', $data)) {
             Log::error("Erro getRelatorioDeCoordenadas('$startDate', '$endDate',  '$numberPlate'): " . $data['msgerro']);
-            return [];
+            return null;
         }
 
         if (!array_key_exists('Posicao', $data)) {
             Log::error("Sem retorno para getRelatorioDeCoordenadas('$startDate', '$endDate',  '$numberPlate'): " . print_r($data, true));
-            return [];
+            return null;
         }
 
         return $data['Posicao'];
